@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1e1b4b" />
+  <meta name="description" content="Gerenciador de tarefas e projetos pessoais com JWT e MongoDB" />
+  <title>TaskManager</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="nav-brand">TaskManager</span>
+    <div class="nav-tabs">
+      <button class="tab-btn active" data-tab="usuarios">Usuários</button>
+      <button class="tab-btn" data-tab="projetos">Projetos</button>
+      <button class="tab-btn" data-tab="tarefas">Tarefas</button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════ TAB: USUÁRIOS ══════════════════ -->
+  <div id="tab-usuarios" class="tab-content active">
+    <div class="container">
+      <div class="grid-2">
+        <section class="card">
+          <h2>Cadastro</h2>
+          <form id="registerForm">
+            <input type="text"     id="registerName"     placeholder="Nome"  required />
+            <input type="email"    id="registerEmail"    placeholder="Email" required />
+            <input type="password" id="registerPassword" placeholder="Senha" required />
+            <select id="registerRole">
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </select>
+            <button type="submit">Cadastrar</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>Login</h2>
+          <form id="loginForm">
+            <input type="email"    id="loginEmail"    placeholder="Email" required />
+            <input type="password" id="loginPassword" placeholder="Senha" required />
+            <button type="submit">Entrar</button>
+          </form>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2>Sessão</h2>
+        <div class="actions">
+          <button id="loadProfileBtn">Meu perfil</button>
+          <button id="loadUsersBtn">Listar usuários</button>
+          <button id="logoutBtn" class="danger">Sair</button>
+        </div>
+        <pre id="profileOutput">Nenhum dado carregado.</pre>
+      </section>
+
+      <div class="grid-2">
+        <section class="card">
+          <h2>Atualizar usuário</h2>
+          <form id="updateForm">
+            <input type="text"  id="updateId"    placeholder="ID do usuário" required />
+            <input type="text"  id="updateName"  placeholder="Novo nome" />
+            <input type="email" id="updateEmail" placeholder="Novo email" />
+            <select id="updateRole">
+              <option value="">Manter role atual</option>
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </select>
+            <button type="submit">Atualizar</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>Atualizar senha</h2>
+          <form id="passwordForm">
+            <input type="text"     id="passwordId"   placeholder="ID do usuário" required />
+            <input type="password" id="newPassword"  placeholder="Nova senha"    required />
+            <button type="submit">Alterar senha</button>
+          </form>
+        </section>
+      </div>
+
+      <section class="card">
+        <h2>Remover usuário</h2>
+        <form id="deleteForm" style="max-width:400px">
+          <input type="text" id="deleteId" placeholder="ID do usuário" required />
+          <button type="submit" class="danger">Excluir</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Resposta da API</h2>
+        <pre id="apiOutput">Aguardando ação.</pre>
+      </section>
+    </div>
+  </div>
+
+  <!-- ══════════════════ TAB: PROJETOS ══════════════════ -->
+  <div id="tab-projetos" class="tab-content">
+    <div class="container">
+
+      <section class="card">
+        <h2>Novo projeto</h2>
+        <form id="createProjectForm">
+          <input type="text"  id="projectName"        placeholder="Nome do projeto"  required />
+          <textarea           id="projectDescription" placeholder="Descrição"        required></textarea>
+          <div style="display:flex;gap:10px;align-items:center">
+            <label style="font-size:14px;color:#6b7280">Cor:</label>
+            <input type="color" id="projectColor" value="#6366f1" style="padding:4px;width:60px;height:36px" />
+          </div>
+          <select id="projectStatus">
+            <option value="ativo">Ativo</option>
+            <option value="pausado">Pausado</option>
+            <option value="concluido">Concluído</option>
+          </select>
+          <button type="submit" class="success">Criar projeto</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Meus projetos</h2>
+        <div class="actions">
+          <button id="loadProjectsBtn">Carregar projetos</button>
+        </div>
+        <div id="projectsList"></div>
+      </section>
+
+      <section class="card">
+        <h2>Buscar projeto por ID</h2>
+        <form id="getProjectForm" style="max-width:400px">
+          <input type="text" id="getProjectId" placeholder="ID do projeto" required />
+          <button type="submit">Buscar</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Atualizar projeto</h2>
+        <form id="updateProjectForm">
+          <input type="text"  id="updateProjectId"          placeholder="ID do projeto" required />
+          <input type="text"  id="updateProjectName"        placeholder="Novo nome" />
+          <textarea           id="updateProjectDescription" placeholder="Nova descrição"></textarea>
+          <select id="updateProjectStatus">
+            <option value="">Manter status atual</option>
+            <option value="ativo">Ativo</option>
+            <option value="pausado">Pausado</option>
+            <option value="concluido">Concluído</option>
+          </select>
+          <button type="submit">Atualizar projeto</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Remover projeto</h2>
+        <form id="deleteProjectForm" style="max-width:400px">
+          <input type="text" id="deleteProjectId" placeholder="ID do projeto" required />
+          <button type="submit" class="danger">Excluir projeto</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Resposta da API</h2>
+        <pre id="projectApiOutput">Aguardando ação.</pre>
+      </section>
+    </div>
+  </div>
+
+  <!-- ══════════════════ TAB: TAREFAS ══════════════════ -->
+  <div id="tab-tarefas" class="tab-content">
+    <div class="container">
+
+      <section class="card">
+        <h2>Nova tarefa</h2>
+        <form id="createTaskForm">
+          <input type="text"  id="taskTitle"       placeholder="Título da tarefa"       required />
+          <textarea           id="taskDescription" placeholder="Descrição (opcional)"></textarea>
+          <input type="text"  id="taskProjectId"   placeholder="ID do projeto"          required />
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <select id="taskPriority">
+              <option value="baixa">Prioridade: Baixa</option>
+              <option value="media" selected>Prioridade: Média</option>
+              <option value="alta">Prioridade: Alta</option>
+            </select>
+            <select id="taskStatus">
+              <option value="pendente">Pendente</option>
+              <option value="em_andamento">Em andamento</option>
+              <option value="concluida">Concluída</option>
+            </select>
+          </div>
+          <input type="date" id="taskDueDate" />
+          <button type="submit" class="success">Criar tarefa</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Minhas tarefas</h2>
+        <div class="actions">
+          <button id="loadTasksBtn">Carregar todas</button>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+          <input type="text"  id="filterProjectId" placeholder="Filtrar por ID do projeto" style="flex:1;min-width:200px;padding:8px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px" />
+          <select id="filterStatus" style="padding:8px 12px;border-radius:8px;border:1px solid #d1d5db;font-size:14px">
+            <option value="">Todos os status</option>
+            <option value="pendente">Pendente</option>
+            <option value="em_andamento">Em andamento</option>
+            <option value="concluida">Concluída</option>
+          </select>
+          <button id="filterTasksBtn">Filtrar</button>
+        </div>
+        <div id="tasksList"></div>
+      </section>
+
+      <section class="card">
+        <h2>Buscar tarefa por ID</h2>
+        <form id="getTaskForm" style="max-width:400px">
+          <input type="text" id="getTaskId" placeholder="ID da tarefa" required />
+          <button type="submit">Buscar</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Atualizar tarefa</h2>
+        <form id="updateTaskForm">
+          <input type="text"  id="updateTaskId"          placeholder="ID da tarefa" required />
+          <input type="text"  id="updateTaskTitle"       placeholder="Novo título" />
+          <textarea           id="updateTaskDescription" placeholder="Nova descrição"></textarea>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <select id="updateTaskPriority">
+              <option value="">Manter prioridade</option>
+              <option value="baixa">Baixa</option>
+              <option value="media">Média</option>
+              <option value="alta">Alta</option>
+            </select>
+            <select id="updateTaskStatus">
+              <option value="">Manter status</option>
+              <option value="pendente">Pendente</option>
+              <option value="em_andamento">Em andamento</option>
+              <option value="concluida">Concluída</option>
+            </select>
+          </div>
+          <input type="date" id="updateTaskDueDate" />
+          <button type="submit">Atualizar tarefa</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Remover tarefa</h2>
+        <form id="deleteTaskForm" style="max-width:400px">
+          <input type="text" id="deleteTaskId" placeholder="ID da tarefa" required />
+          <button type="submit" class="danger">Excluir tarefa</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Resposta da API</h2>
+        <pre id="taskApiOutput">Aguardando ação.</pre>
+      </section>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
